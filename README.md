@@ -1,6 +1,5 @@
-
-
-About Advent of Code - https://adventofcode.com/
+About Advent of Code
+Site - https://adventofcode.com/
 Advent of Code is an annual programming challenge that runs from December 1st to 25th. Each day features a new programming puzzle with two parts, progressively increasing in difficulty.
 
 It's a fun way to practice programming skills, learn new algorithms, and challenge yourself during the holiday season.
