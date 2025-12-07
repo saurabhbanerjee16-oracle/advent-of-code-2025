@@ -1,0 +1,86 @@
+/* REXX: Simple solution for Part 1 */
+infile = 'inp7'
+
+/* Read all lines */
+maxrow = 0
+do i = 1 while lines(infile) > 0
+  line.i = linein(infile)
+  maxrow = i
+end
+line.0 = maxrow
+
+/* Find 'S' */
+do r = 1 to line.0
+  c = pos('S', line.r)
+  if c > 0 then do
+    startR = r
+    startC = c
+    leave r
+  end
+end
+
+rows = line.0
+cols = length(line.1)
+
+/* Create tracking grid as space-separated values */
+beamGrid = ''
+do r = 1 to rows
+  beamGrid.r = copies('0', cols)
+end
+
+/* Initialize */
+activeBeams = (startR + 1) startC
+if startR + 1 <= rows then
+  beamGrid.startR + 1 = overlay('1', beamGrid.startR + 1, startC)
+
+splits = 0
+
+do while activeBeams \= ''
+  newBeams = ''
+  
+  do i = 1 to words(activeBeams) by 2
+    r = word(activeBeams, i)
+    c = word(activeBeams, i+1)
+    
+    if r <= rows then do
+      cell = substr(line.r, c, 1)
+      
+      if cell = '^' then do
+        splits = splits + 1
+        
+        /* Left */
+        leftC = c - 1
+        if leftC >= 1 then do
+          if substr(beamGrid.r, leftC, 1) = '0' then do
+            newBeams = newBeams r leftC
+            beamGrid.r = overlay('1', beamGrid.r, leftC)
+          end
+        end
+        
+        /* Right */
+        rightC = c + 1
+        if rightC <= cols then do
+          if substr(beamGrid.r, rightC, 1) = '0' then do
+            newBeams = newBeams r rightC
+            beamGrid.r = overlay('1', beamGrid.r, rightC)
+          end
+        end
+      end
+      else do
+        /* Move down */
+        nextR = r + 1
+        if nextR <= rows then do
+          if substr(beamGrid.nextR, c, 1) = '0' then do
+            newBeams = newBeams nextR c
+            beamGrid.nextR = overlay('1', beamGrid.nextR, c)
+          end
+        end
+      end
+    end
+  end
+  
+  activeBeams = strip(newBeams)
+end
+
+say "Total splits:" splits
+exit
