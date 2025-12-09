@@ -13,57 +13,53 @@ class UnionFind:
         self.size = [1] * n
     
     def find(self, x):
+        """Find root of x with path compression."""
         if self.parent[x] != x:
             self.parent[x] = self.find(self.parent[x])
         return self.parent[x]
     
     def union(self, x, y):
+        """Union two elements, return True if they were in different sets."""
         root_x = self.find(x)
         root_y = self.find(y)
         
         if root_x == root_y:
-            return False
+            return False  # Already in same set
         
+        # Union by rank
         if self.rank[root_x] < self.rank[root_y]:
             self.parent[root_x] = root_y
-            self.size[root_y] += self.size[root_x]
+            self.size[root_y] = self.size[root_y] + self.size[root_x]
+            # Update all sizes in the component to maintain consistency
+            self.size[root_x] = self.size[root_y]
         elif self.rank[root_x] > self.rank[root_y]:
             self.parent[root_y] = root_x
-            self.size[root_x] += self.size[root_y]
+            self.size[root_x] = self.size[root_x] + self.size[root_y]
+            self.size[root_y] = self.size[root_x]
         else:
             self.parent[root_y] = root_x
-            self.size[root_x] += self.size[root_y]
+            self.size[root_x] = self.size[root_x] + self.size[root_y]
+            self.size[root_y] = self.size[root_x]
             self.rank[root_x] += 1
         
-        return True
+        return True  # Successfully merged
 
-def test_example():
-    # Example data
-    example_data = """162,817,812
-57,618,57
-906,360,560
-592,479,940
-352,342,300
-466,668,158
-542,29,236
-431,825,988
-739,650,466
-52,470,668
-216,146,977
-819,987,18
-117,168,530
-805,96,715
-346,949,466
-970,615,88
-941,993,340
-862,61,35
-984,92,344
-425,690,689"""
+def main():
+    # Read input from file
+    with open('input8.txt', 'r') as f:
+        lines = f.readlines()
     
     # Parse points
     points = []
-    for line in example_data.strip().split('\n'):
-        x, y, z = map(int, line.split(','))
+    for line in lines:
+        line = line.strip()
+        if not line:
+            continue
+        # Handle comma-separated or space-separated coordinates
+        if ',' in line:
+            x, y, z = map(int, line.split(','))
+        else:
+            x, y, z = map(int, line.split())
         points.append((x, y, z))
     
     n = len(points)
@@ -81,14 +77,14 @@ def test_example():
     # Initialize Union-Find
     uf = UnionFind(n)
     
-    # Print first 10 connections to debug
-    print("First 10 connections:")
-    for i in range(10):
+    # Make 1000 connection attempts (the 1000 shortest distances)
+    connections_to_make = 1000
+    if len(pairs) < connections_to_make:
+        connections_to_make = len(pairs)
+    
+    for i in range(connections_to_make):
         dist, idx1, idx2 = pairs[i]
-        p1 = points[idx1]
-        p2 = points[idx2]
-        print(f"{i+1}. Distance {dist:.2f}: {p1} - {p2}")
-        uf.union(idx1, idx2)
+        uf.union(idx1, idx2)  # Attempt to connect
     
     # Count sizes of all connected components
     component_sizes = defaultdict(int)
@@ -99,17 +95,19 @@ def test_example():
     # Get sizes list and sort in descending order
     sizes = sorted(component_sizes.values(), reverse=True)
     
-    print(f"\nComponent sizes after 10 connections: {sizes}")
-    print(f"Number of components: {len(sizes)}")
-    
     # Multiply the three largest sizes
     if len(sizes) >= 3:
         result = sizes[0] * sizes[1] * sizes[2]
     else:
         result = 0
     
+    print(f"Total junction boxes: {n}")
+    print(f"Number of connection attempts made: {connections_to_make}")
+    print(f"Number of circuits after connections: {len(sizes)}")
+    print(f"Three largest circuit sizes: {sizes[:3]}")
     print(f"Product of three largest: {result}")
+    
     return result
 
 if __name__ == "__main__":
-    test_example()
+    main()
